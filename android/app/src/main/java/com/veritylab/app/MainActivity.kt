@@ -1,5 +1,6 @@
 package com.veritylab.app
 
+import android.os.Build
 import android.Manifest
 import android.content.Intent
 import android.graphics.Bitmap
@@ -61,7 +62,7 @@ class MainActivity : ComponentActivity() {
     @Composable private fun VerityApp() {
         val prefs = remember { getSharedPreferences("verity-checkpoint", MODE_PRIVATE) }
         val records = remember { mutableStateListOf<TestRecord>().apply { addAll(restoreRecords(prefs.getString("evidence_records", null))) } }
-        var deviceLabel by remember { mutableStateOf(prefs.getString("device_label", "") ?: "") }
+        val deviceLabel = remember { "${Build.MANUFACTURER} ${Build.MODEL}".trim() }
         var serial by remember { mutableStateOf("") }
         var status by remember { mutableStateOf("Local test session. No report is issued by this build.") }
         var touchMode by remember { mutableStateOf(false) }
