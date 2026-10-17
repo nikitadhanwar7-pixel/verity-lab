@@ -134,9 +134,30 @@ class MainActivity : ComponentActivity() {
                                 )
                                 Button(
                                     onClick = {
-                                        homeScreen = false
-                                        status = "New local test session started. Run the available checks below."
-                                    },
+                                    homeScreen = false
+                                    status = "Running automatic checks..."
+                                
+                                    val battery = DiagnosticEngine.battery(this@MainActivity)
+                                    val sensors = DiagnosticEngine.sensors(this@MainActivity)
+                                
+                                    addWithRetestPolicy(
+                                        records,
+                                        "battery-readings",
+                                        battery,
+                                        { status = it },
+                                        prefs
+                                    )
+                                
+                                    addWithRetestPolicy(
+                                        records,
+                                        "sensor-inventory",
+                                        sensors,
+                                        { status = it },
+                                        prefs
+                                    )
+                                
+                                    status = "Automatic checks completed. Battery readings and sensor inventory were saved locally."
+                                },
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text("Test your mobile")
