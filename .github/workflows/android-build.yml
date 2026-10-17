@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "verity-lab-android-foundation-v0.1.zip"
+      - "android/**"
       - ".github/workflows/android-build.yml"
 
 permissions:
@@ -14,6 +14,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,24 +25,22 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
 
-      - name: Extract project
-        run: |
-          unzip -q verity-lab-android-foundation-v0.1.zip -d source
-          test -f source/verity-lab-build/android/build.gradle.kts
-
       - name: Build debug APK
-        working-directory: source/verity-lab-build/android
+        working-directory: android
         run: gradle assembleDebug
 
       - name: Save APK
         uses: actions/upload-artifact@v4
         with:
           name: verity-lab-debug-apk
-          path: source/verity-lab-build/android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
