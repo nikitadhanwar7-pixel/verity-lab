@@ -65,6 +65,7 @@ class MainActivity : ComponentActivity() {
         val deviceLabel = remember { "${Build.MANUFACTURER} ${Build.MODEL}".trim() }
         var serial by remember { mutableStateOf("") }
         var status by remember { mutableStateOf("Local test session. No report is issued by this build.") }
+        var homeScreen by remember { mutableStateOf(true) }
         var touchMode by remember { mutableStateOf(false) }
         var touchFirst by remember { mutableStateOf<Attempt?>(null) }
         val points = remember { mutableStateListOf<Offset>() }
@@ -77,7 +78,119 @@ class MainActivity : ComponentActivity() {
         }
         MaterialTheme(colorScheme = darkColorScheme(primary = Blue, background = Ink, surface = Panel)) {
             Surface(color = Ink, modifier = Modifier.fillMaxSize()) {
-                if (touchMode) {
+               if (homeScreen) {
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        Spacer(Modifier.height(20.dp))
+                
+                        Text(
+                            "VERITY",
+                            color = Color.White,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                        Text(
+                            "LAB / ANDROID DIAGNOSTICS",
+                            color = Blue,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                
+                        Spacer(Modifier.height(24.dp))
+                
+                        Text(
+                            "Test your mobile.",
+                            color = Color.White,
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                        Text(
+                            "Know the phone before you buy it. Check what works and understand what needs attention.",
+                            color = Muted,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                
+                        Spacer(Modifier.height(12.dp))
+                
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Panel),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                Modifier.padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Text("FIRST-TIME TEST", color = Blue)
+                                Text(
+                                    "Start a new phone diagnostic.",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                                Text(
+                                    "We'll begin with the checks available in this version.",
+                                    color = Muted
+                                )
+                                Button(
+                                    onClick = {
+                                        homeScreen = false
+                                        status = "New local test session started. Run the available checks below."
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Test your mobile")
+                                }
+                            }
+                        }
+                
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Panel),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                Modifier.padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Text("RESUME TEST", color = Blue)
+                                Text(
+                                    "Interrupted a test?",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                                Text(
+                                    if (records.isEmpty()) {
+                                        "No saved test evidence is available yet."
+                                    } else {
+                                        "Your saved evidence contains ${records.size} test module(s)."
+                                    },
+                                    color = Muted
+                                )
+                                OutlinedButton(
+                                    onClick = {
+                                        homeScreen = false
+                                        status = if (records.isEmpty()) {
+                                            "No saved evidence found. You can start testing below."
+                                        } else {
+                                            "Saved evidence loaded. Full interrupted-test resume is not implemented yet."
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Resume interrupted test")
+                                }
+                            }
+                        }
+                
+                        Spacer(Modifier.weight(1f))
+                
+                        Text(
+                            "Evidence-based checks. No blanket guarantee of phone health.",
+                            color = Muted,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                } else if (touchMode) {
                     Column(Modifier.fillMaxSize().padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("TOUCH RESPONSE", style = MaterialTheme.typography.headlineSmall, color = Blue)
                         Text("Trace the entire panel, edges and corners. Dots show where Android delivered touch events.", color = Muted)
