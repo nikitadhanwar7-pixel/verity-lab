@@ -129,7 +129,6 @@ class MainActivity : ComponentActivity() {
                         Text("Evidence-first testing. A test result is not a blanket guarantee of device health.", color = Muted)
                         Card(colors = CardDefaults.cardColors(containerColor = Panel)) {
                             Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                OutlinedTextField(value = deviceLabel, onValueChange = { deviceLabel = it }, label = { Text("Phone model (as entered)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
                                 OutlinedTextField(value = serial, onValueChange = { serial = it }, label = { Text("Serial number (not saved or uploaded in this build)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
                                 Text("Do not enter IMEI or serial until the privacy policy and secure backend are live.", color = Muted, style = MaterialTheme.typography.bodySmall)
                                 Button(onClick = { prefs.edit().putString("device_label", deviceLabel).apply(); status = "Model checkpoint saved locally. Serial is not persisted or uploaded by this build." }, modifier = Modifier.fillMaxWidth()) { Text("Save local checkpoint") }
