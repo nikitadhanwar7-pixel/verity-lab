@@ -43,7 +43,9 @@ object DiagnosticEngine {
             BatteryManager.EXTRA_VOLTAGE,
             -1
         )
-        
+        // Reject clearly implausible voltage readings.
+        // Android reports EXTRA_VOLTAGE in millivolts.
+        val voltageValid = voltageMv in 2500..5000
         val chargeCounterUah = if (Build.VERSION.SDK_INT >= 21) {
             val manager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
             manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
@@ -71,7 +73,11 @@ val currentNowUa = if (Build.VERSION.SDK_INT >= 21) {
         val evidence = JSONObject().put("battery_level_percent", if (pct.isFinite()) pct else JSONObject.NULL)
             .put("battery_temperature_c", if (temp >= 0) temp else JSONObject.NULL)
             .put("charging_status_code", status)
-            .put("battery_voltage_mv", if (voltageMv > 0) voltageMv else JSONObject.NULL)
+            .put(
+                "battery_voltage_mv",
+                if (voltageValid) voltageMv else JSONObject.NULL
+            )
+            .put("battery_voltage_reading_valid", voltageValid)
             .put("battery_charge_counter_uah", if (chargeCounterUah >= 0) chargeCounterUah else JSONObject.NULL)
             .put("battery_current_now_ua", if (currentNowUa != Int.MIN_VALUE) currentNowUa else JSONObject.NULL)
             .put("battery_cycle_count", if (cycleCount >= 0) cycleCount else JSONObject.NULL)
