@@ -52,19 +52,27 @@ object DiagnosticEngine {
         } else {
             -1
         }
-val currentNowUa = if (Build.VERSION.SDK_INT >= 21) {
-    val manager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
-    manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-} else {
-    Int.MIN_VALUE
-}
-        val cycleCount = if (Build.VERSION.SDK_INT >= 34 &&
-            intent.hasExtra(BatteryManager.EXTRA_CYCLE_COUNT)
-        ) {
-            intent.getIntExtra(BatteryManager.EXTRA_CYCLE_COUNT, -1)
+        val currentNowUa = if (Build.VERSION.SDK_INT >= 21) {
+            val manager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
         } else {
-            -1
+            Int.MIN_VALUE
         }
+        // Sanity checks only; these do not prove measurement accuracy.
+        val chargeCounterPlausible =
+            chargeCounterUah in 0..20_000_000
+        
+        val currentNearZero =
+            currentNowUa != Int.MIN_VALUE &&
+            kotlin.math.abs(currentNowUa.toLong()) < 10_000L
+                
+                val cycleCount = if (Build.VERSION.SDK_INT >= 34 &&
+                    intent.hasExtra(BatteryManager.EXTRA_CYCLE_COUNT)
+                ) {
+                    intent.getIntExtra(BatteryManager.EXTRA_CYCLE_COUNT, -1)
+                } else {
+                    -1
+                }
         
         val batteryHealth = intent.getIntExtra(
             BatteryManager.EXTRA_HEALTH,
@@ -78,8 +86,32 @@ val currentNowUa = if (Build.VERSION.SDK_INT >= 21) {
                 if (voltageValid) voltageMv else JSONObject.NULL
             )
             .put("battery_voltage_reading_valid", voltageValid)
-            .put("battery_charge_counter_uah", if (chargeCounterUah >= 0) chargeCounterUah else JSONObject.NULL)
-            .put("battery_current_now_ua", if (currentNowUa != Int.MIN_VALUE) currentNowUa else JSONObject.NULL)
+            .put(
+                "battery_charge_counter_raw_uah",
+                if (chargeCounterUah >= 0)
+                    chargeCounterUah
+                else JSONObject.NULL
+            )
+            .put(
+                "battery_charge_counter_uah",
+                if (chargeCounterPlausible)
+                    chargeCounterUah
+                else JSONObject.NULL
+            )
+            .put(
+                "battery_charge_counter_plausible",
+                chargeCounterPlausible
+            )
+            .put(
+                "battery_current_now_ua",
+                if (currentNowUa != Int.MIN_VALUE)
+                    currentNowUa
+                else JSONObject.NULL
+            )
+            .put(
+                "battery_current_near_zero",
+                currentNearZero
+            )
             .put("battery_cycle_count", if (cycleCount >= 0) cycleCount else JSONObject.NULL)
             .put("battery_health_code", batteryHealth)
             .put("manufacturer", Build.MANUFACTURER).put("model", Build.MODEL)
