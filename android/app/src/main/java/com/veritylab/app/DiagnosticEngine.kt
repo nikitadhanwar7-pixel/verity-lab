@@ -39,9 +39,23 @@ object DiagnosticEngine {
         val pct = if (level >= 0 && scale > 0) level * 100.0 / scale else Double.NaN
         val temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) / 10.0
         val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+        val cycleCount = if (Build.VERSION.SDK_INT >= 34 &&
+            intent.hasExtra(BatteryManager.EXTRA_CYCLE_COUNT)
+        ) {
+            intent.getIntExtra(BatteryManager.EXTRA_CYCLE_COUNT, -1)
+        } else {
+            -1
+        }
+        
+        val batteryHealth = intent.getIntExtra(
+            BatteryManager.EXTRA_HEALTH,
+            -1
+        )
         val evidence = JSONObject().put("battery_level_percent", if (pct.isFinite()) pct else JSONObject.NULL)
             .put("battery_temperature_c", if (temp >= 0) temp else JSONObject.NULL)
             .put("charging_status_code", status)
+            .put("battery_cycle_count", if (cycleCount >= 0) cycleCount else JSONObject.NULL)
+            .put("battery_health_code", batteryHealth)
             .put("manufacturer", Build.MANUFACTURER).put("model", Build.MODEL)
         return Attempt(Outcome.OBSERVED, evidence, "System-reported battery readings only; this does not measure true capacity, cycle count or remaining lifespan.")
     }
