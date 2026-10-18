@@ -39,6 +39,23 @@ object DiagnosticEngine {
         val pct = if (level >= 0 && scale > 0) level * 100.0 / scale else Double.NaN
         val temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) / 10.0
         val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+        val voltageMv = intent.getIntExtra(
+            BatteryManager.EXTRA_VOLTAGE,
+            -1
+        )
+        
+        val chargeCounterUah = if (Build.VERSION.SDK_INT >= 21) {
+            val manager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
+        } else {
+            -1
+        }
+val currentNowUa = if (Build.VERSION.SDK_INT >= 21) {
+    val manager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+    manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+} else {
+    Int.MIN_VALUE
+}
         val cycleCount = if (Build.VERSION.SDK_INT >= 34 &&
             intent.hasExtra(BatteryManager.EXTRA_CYCLE_COUNT)
         ) {
@@ -54,6 +71,9 @@ object DiagnosticEngine {
         val evidence = JSONObject().put("battery_level_percent", if (pct.isFinite()) pct else JSONObject.NULL)
             .put("battery_temperature_c", if (temp >= 0) temp else JSONObject.NULL)
             .put("charging_status_code", status)
+            .put("battery_voltage_mv", if (voltageMv > 0) voltageMv else JSONObject.NULL)
+            .put("battery_charge_counter_uah", if (chargeCounterUah >= 0) chargeCounterUah else JSONObject.NULL)
+            .put("battery_current_now_ua", if (currentNowUa != Int.MIN_VALUE) currentNowUa else JSONObject.NULL)
             .put("battery_cycle_count", if (cycleCount >= 0) cycleCount else JSONObject.NULL)
             .put("battery_health_code", batteryHealth)
             .put("manufacturer", Build.MANUFACTURER).put("model", Build.MODEL)
