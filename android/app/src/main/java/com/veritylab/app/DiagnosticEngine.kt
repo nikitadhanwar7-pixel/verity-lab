@@ -39,6 +39,14 @@ object DiagnosticEngine {
         val pct = if (level >= 0 && scale > 0) level * 100.0 / scale else Double.NaN
         val temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) / 10.0
         val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+        val statusLabel = when (status) {
+            BatteryManager.BATTERY_STATUS_UNKNOWN -> "UNKNOWN"
+            BatteryManager.BATTERY_STATUS_CHARGING -> "CHARGING"
+            BatteryManager.BATTERY_STATUS_DISCHARGING -> "DISCHARGING"
+            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "NOT_CHARGING"
+            BatteryManager.BATTERY_STATUS_FULL -> "FULL"
+            else -> "UNAVAILABLE"
+        }
         val voltageMv = intent.getIntExtra(
             BatteryManager.EXTRA_VOLTAGE,
             -1
@@ -81,6 +89,7 @@ object DiagnosticEngine {
         val evidence = JSONObject().put("battery_level_percent", if (pct.isFinite()) pct else JSONObject.NULL)
             .put("battery_temperature_c", if (temp >= 0) temp else JSONObject.NULL)
             .put("charging_status_code", status)
+            .put("charging_status", statusLabel)
             .put(
                 "battery_voltage_mv",
                 if (voltageValid) voltageMv else JSONObject.NULL
